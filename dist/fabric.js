@@ -9875,10 +9875,15 @@ fabric.ElementsParser = function(elements, callback, options, reviver, parsingOp
       }
       if (object) {
         ctx.save();
+        var skipOffscreen = this.skipOffscreen;
+        // if the object doesn't move with the viewport,
+        // the offscreen concept does not apply;
+        this.skipOffscreen = needsVpt;
         if (needsVpt) {
           ctx.transform(v[0], v[1], v[2], v[3], v[4], v[5]);
         }
         object.render(ctx);
+        this.skipOffscreen = skipOffscreen;
         ctx.restore();
       }
     },
@@ -18055,7 +18060,10 @@ fabric.util.object.extend(fabric.Object.prototype, /** @lends fabric.Object.prot
     drawControls: function(ctx, styleOverride) {
       styleOverride = styleOverride || {};
       ctx.save();
-      var retinaScaling = this.canvas.getRetinaScaling(), matrix, p;
+      var retinaScaling = 1, matrix, p;
+      if (this.canvas) {
+        retinaScaling = this.canvas.getRetinaScaling();
+      }
       ctx.setTransform(retinaScaling, 0, 0, retinaScaling, 0, 0);
       ctx.strokeStyle = ctx.fillStyle = styleOverride.cornerColor || this.cornerColor;
       if (!this.transparentCorners) {
